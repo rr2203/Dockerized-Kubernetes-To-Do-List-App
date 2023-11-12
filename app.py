@@ -13,7 +13,24 @@ todos = db.todo #Select the collection
 app = Flask(__name__)
 title = "TODO with Flask"
 heading = "ToDo Reminder"
-#modify=ObjectId()
+
+@app.route('/healthz')
+def healthz():
+    # Liveness probe endpoint
+    # Simply returns HTTP 200 OK to indicate the server is alive
+    return '', 200
+
+@app.route('/ready')
+def ready():
+    # Readiness probe endpoint
+    # Checks the MongoDB connection to ensure the service can access the database
+    try:
+        # Perform a simple operation to ensure the database is accessible
+        client.admin.command('ping')
+        return '', 200  # Return HTTP 200 OK to indicate readiness
+    except Exception as e:
+        # If the database cannot be reached, return an error code to indicate not ready
+        return str(e), 503  # Service Unavailable
 
 def redirect_url():
 	return request.args.get('next') or \
@@ -123,6 +140,5 @@ if __name__ == "__main__":
 	env = os.environ.get('FLASK_ENV', 'development')
 	port = int(os.environ.get('PORT', 5000))
 	debug = False if env == 'production' else True
-	app.run(debug=True)
 	app.run(port=port, debug=debug)
 	# Careful with the debug mode..

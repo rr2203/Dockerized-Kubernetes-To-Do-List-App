@@ -14,7 +14,21 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: haywire2210/todo-list:latest
+        image: haywire2210/todo-list:v2
+        livenessProbe:
+                  httpGet:
+                    path: /healthz
+                    port: 5000
+                  initialDelaySeconds: 15
+                  periodSeconds: 10
+                  failureThreshold: 3
+        readinessProbe:
+                  httpGet:
+                    path: /ready
+                    port: 5000
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  failureThreshold: 1
         ports:
         - containerPort: 5000
         env:
@@ -24,3 +38,8 @@ spec:
           value: "27017"
         - name: FLASK_ENV
           value: "production"
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
